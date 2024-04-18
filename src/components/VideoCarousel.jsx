@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { hightlightsSlides } from "../constants";
-import gsap from "gsap/gsap-core";
+import gsap from "gsap";
 import { pauseImg, playImg, replayImg } from "../utils";
 import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/all";
+gsap.registerPlugin(ScrollTrigger);
 
 const VideoCarousel = () => {
   const videoRef = useRef([]);
   const videoSpanRef = useRef([]);
   const videoDivRef = useRef([]);
 
+  // video and indicator
   const [video, setVideo] = useState({
     isEnd: false,
     startPlay: false,
@@ -16,9 +19,9 @@ const VideoCarousel = () => {
     isLastVideo: false,
     isPlaying: false,
   });
-  const [loadedData, setloadedData] = useState([]);
 
-  const { isEnd, startPlay, videoId, isLastVideo, isPlaying } = video;
+  const [loadedData, setLoadedData] = useState([]);
+  const { isEnd, isLastVideo, startPlay, videoId, isPlaying } = video;
 
   useGSAP(() => {
     // slider animation to move the video out of the screen and bring the next video in
@@ -28,13 +31,18 @@ const VideoCarousel = () => {
       ease: "power2.inOut", // show visualizer https://gsap.com/docs/v3/Eases
     });
 
+    // video animation to play the video when it is in the view
     gsap.to("#video", {
       scrollTrigger: {
         trigger: "#video",
         toggleActions: "restart none none none",
       },
       onComplete: () => {
-        setVideo((pre) => ({ ...pre, startPlay: true, isPlaying: true }));
+        setVideo((pre) => ({
+          ...pre,
+          startPlay: true,
+          isPlaying: true,
+        }));
       },
     });
   }, [isEnd, videoId]);
@@ -116,8 +124,7 @@ const VideoCarousel = () => {
     }
   }, [startPlay, videoId, isPlaying, loadedData]);
 
-  const handleLoadedMetaData = (i, e) => setloadedData((pre) => [...pre, e]);
-
+  // vd id is the id for every video until id becomes number 3
   const handleProcess = (type, i) => {
     switch (type) {
       case "video-end":
@@ -145,13 +152,15 @@ const VideoCarousel = () => {
     }
   };
 
+  const handleLoadedMetaData = (i, e) => setLoadedData((pre) => [...pre, e]);
+
   return (
     <>
       <div className="flex items-center">
         {hightlightsSlides.map((list, i) => (
-          <div key={list.id} id={"slider"} className="sm:pr-20 pr-10">
+          <div key={list.id} id="slider" className="sm:pr-20 pr-10">
             <div className="video-carousel_container">
-              <div className="w-full h-full bg-black rounded-3xl flex-center overflow-hidden">
+              <div className="w-full h-full flex-center rounded-3xl overflow-hidden bg-black">
                 <video
                   id="video"
                   playsInline={true}
@@ -176,8 +185,8 @@ const VideoCarousel = () => {
               </div>
 
               <div className="absolute top-12 left-[5%] z-10">
-                {list.textLists.map((text) => (
-                  <p key={text} className="font-medium md:text-2xl text-xl">
+                {list.textLists.map((text, i) => (
+                  <p key={i} className="md:text-2xl text-xl font-medium">
                     {text}
                   </p>
                 ))}
